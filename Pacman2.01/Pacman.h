@@ -11,7 +11,7 @@ public:
 	Pacman( Position& startPos) : Entity(startPos) {}
 	Pacman() = default;
 	~Pacman(){};
-	void move(Map& mp,int pacmanY, int pacmanX,bool colorful, int scoreAndLivesRow);
+	char move(Map& mp,int pacmanY, int pacmanX,bool colorful, int scoreAndLivesRow);
 	void setDirection(char newDirection);
 	void printSymbol()const;
 	void eatCrumb(Map& mp)

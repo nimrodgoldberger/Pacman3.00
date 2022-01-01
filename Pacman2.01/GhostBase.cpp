@@ -1,6 +1,6 @@
 #include "GhostBase.h"
 
-void GhostBase::move(Map& mp,int pacmanY, int pacmanX,bool colorful, int scoreAndLivesRow)
+char GhostBase::move(Map& mp,int pacmanY, int pacmanX,bool colorful, int scoreAndLivesRow)
 {
     decideGhostDirection(mp, mp.getMap(), pacmanY, pacmanX);
 	char nextObject = mp.checkNextMove(y, x, entityDirection);
@@ -128,6 +128,7 @@ void GhostBase::move(Map& mp,int pacmanY, int pacmanX,bool colorful, int scoreAn
 		break;
 	}*/
 	}
+    return entityDirection;
 }
 
 char GhostBase::chooseDirectionFromShortRoute(int up, int down, int left, int right)

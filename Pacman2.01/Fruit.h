@@ -12,7 +12,7 @@ public:
     Fruit() = default;
     virtual ~Fruit(){};
 
-    void move(Map& mp, int pacmanY, int pacmanX,bool colorful, int scoreAndLivesRow);
+    char move(Map& mp, int pacmanY, int pacmanX,bool colorful, int scoreAndLivesRow);
     void setDirection(char newDirection);
     void randDirection();
     int getLifeTime()const;

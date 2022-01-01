@@ -12,7 +12,7 @@ void Pacman::printSymbol()const
 
 
 
-void Pacman::move(Map& mp, int pacmanY, int pacmanX,bool colorful,int scoreAndLivesRow)
+char Pacman::move(Map& mp, int pacmanY, int pacmanX,bool colorful,int scoreAndLivesRow)
 {
 	char nextObject = mp.checkNextMove(y, x, entityDirection);
 	switch (entityDirection)
@@ -244,4 +244,5 @@ void Pacman::move(Map& mp, int pacmanY, int pacmanX,bool colorful,int scoreAndLi
 		break;
 	}
 	}
+	return entityDirection;
 }

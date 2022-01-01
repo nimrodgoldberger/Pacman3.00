@@ -33,7 +33,7 @@ public:
 	inline char getEntityDirection()const { return entityDirection; }
 	
 	/*VIRTUAL*/
-	virtual void move(Map& mp ,int pacmanY,int pacmanX,bool colorful,int scoreAndLivesRow)=0;
+	virtual char move(Map& mp ,int pacmanY,int pacmanX,bool colorful,int scoreAndLivesRow)=0;
 	virtual void printSymbol()const = 0;
 	
 	virtual void setDirection(char newDirection)=0;

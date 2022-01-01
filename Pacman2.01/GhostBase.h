@@ -22,7 +22,7 @@ public:
 	GhostBase( Position startPos) : Entity( startPos) {}
 	GhostBase() = default;
 	virtual ~GhostBase(){};
-	void move(Map & mp, int pacmanY, int pacmanX,bool colorful,int scoreAndLivesRow);
+	char move(Map & mp, int pacmanY, int pacmanX,bool colorful,int scoreAndLivesRow);
 	virtual void setDirection(char newDirection)=0;
 	void printSymbol()const { cout << symbol; };
     virtual void decideGhostDirection(Map& mp, char** theMap, int yDest, int xDest)=0;

@@ -1,5 +1,5 @@
 #include "Fruit.h"
-void Fruit::move(Map& mp, int pacmanY, int pacmanX,bool colorful, int scoreAndLivesRow)
+char Fruit::move(Map& mp, int pacmanY, int pacmanX,bool colorful, int scoreAndLivesRow)
 {
 	randDirection();
 	char nextObject = mp.checkNextMove(y, x, entityDirection);
@@ -111,6 +111,7 @@ void Fruit::move(Map& mp, int pacmanY, int pacmanX,bool colorful, int scoreAndLi
 	}
 	}
 	lifeTime--;
+	return entityDirection;
 }
 
 
