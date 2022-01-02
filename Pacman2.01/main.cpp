@@ -9,30 +9,7 @@ void mainMenu(FilesList& screenlist, FilesList& stepslist, FilesList& resultslis
 void printMenu(int numOfFilesInDirectory);/*Prints the main menu */
 char playCurrScreenGame(FilesList& screenlist, FilesList& stepslist, FilesList& resultslist, GameMode gameMode);
 
-class InputParser {
-public:
-	InputParser(int& argc, char** argv) {
-		for (int i = 1; i < argc; ++i)
-			this->tokens.push_back(std::string(argv[i]));
-	}
-	/// @author iain
-	/*const std::string& getCmdOption(const std::string& option) const {
-		std::vector<std::string>::const_iterator itr;
-		itr = std::find(this->tokens.begin(), this->tokens.end(), option);
-		if (itr != this->tokens.end() && ++itr != this->tokens.end()) {
-			return *itr;
-		}
-		static const std::string empty_string("");
-		return empty_string;
-	}*/
-	/// @author iain
-	bool cmdOptionExists(const std::string& option) const {
-		return std::find(this->tokens.begin(), this->tokens.end(), option)
-			!= this->tokens.end();
-	}
-private:
-	std::vector <std::string> tokens;
-};
+
 //int main(int argc, char** argv) {
 //	InputParser input(argc, argv);
 //	if (input.cmdOptionExists("-load")) {
@@ -64,12 +41,11 @@ int main(int argc, char* argv[])
 	//
 	//	}
 	//}
+	InputParser input(argc, argv);
 	FilesList screenlst, stepslst, resultslst;
 	screenlst.getFilesFromDirectory(FileType::screen);
-	stepslst.getFilesFromDirectory(FileType::steps);
-	resultslst.getFilesFromDirectory(FileType::results);
-
 	//lst.printListOfFiles();
+
 	if (screenlst.getNumOfMaps() == 0)
 	{
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (12));
@@ -78,12 +54,15 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		InputParser input(argc, argv);
+		screenlst.makeSureFilesAreThere(stepslst, FileType::steps, input);
+		cout << "got here and ok";
+		screenlst.makeSureFilesAreThere(resultslst, FileType::results, input);
 		if (input.cmdOptionExists("-load")) {
-			cout << "load" << endl;
+			//cout << "load" << endl;
 			if (argv[1] == "-silent")
 			{
 				mainMenu(screenlst,stepslst,resultslst, GameMode::loadSilent);
+				//cout << "silent" << endl;
 			}
 			else
 			{
@@ -92,7 +71,7 @@ int main(int argc, char* argv[])
 		}
 		if (input.cmdOptionExists("-save")) {
 			mainMenu(screenlst, stepslst, resultslst, GameMode::save);
-			cout << "save" << endl;
+			//cout << "save" << endl;
 		}
 		else if (input.cmdOptionExists("-simple") || argc == 0)
 		{
