@@ -12,28 +12,37 @@ Game::Game(string fileName, int& sumOfScores) :map(Map(fileName))
 /*FUNCTIONS*/
 bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileName, GameMode gameMode)
 {
-	bool GameOn = true, isGamePaused = false,moveGhost=true,collision=false;
+	bool GameOn = true, isGamePaused = false, moveGhost = true, collision = false;
 	char temp = 0;
 	int fruitCoolDown = 0;
 	char direction;
 	int ghostNum;
-	ofstream StepFile, ResultFile;
+	ofstream StepFileW, ResultFileW;
+	ifstream StepFileR, ResultFileR;
 	if (gameMode == GameMode::save)
 	{
-		StepFile = ofstream(stepsFileName, ios_base::out | std::ofstream::trunc);
-		ResultFile = ofstream(resultsFileName, ios_base::out | std::ofstream::trunc);
-
+		StepFileW = ofstream(stepsFileName, ios_base::out | std::ofstream::trunc);
+		ResultFileW = ofstream(resultsFileName, ios_base::out | std::ofstream::trunc);
+	}
+	else if (gameMode != GameMode::simple)
+	{
+		StepFileR = ifstream(stepsFileName, ios_base::in);
+		ResultFileR = ifstream(resultsFileName, ios_base::in);
 	}
 	switch (gameMode)
 	{
 	case GameMode::load:
 	{
 		//to do
+		StepFileR.close();
+		ResultFileR.close();
 		break;
 	}
 	case GameMode::loadSilent:
 	{
 		//to do
+		StepFileR.close();
+		ResultFileR.close();
 		break;
 	}
 	case GameMode::simple:
@@ -54,9 +63,9 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 					}
 
 					direction = pacman.move(map, pacman.getEntityYPos(), pacman.getEntityXPos(), map.doesThePlayerWantColors(), map.getLineOfScoreBar());
-					if (gameMode==GameMode::save)
+					if (gameMode == GameMode::save)
 					{
-						StepFile << 'p' << direction;
+						StepFileW << 'p' << direction;
 					}
 					countSteps++;
 
@@ -66,7 +75,7 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 						{
 							if (gameMode == GameMode::save)
 							{
-								StepFile << 'f' << 'e';//Fruit eaten by pacman
+								StepFileW << 'f' << 'e';//Fruit eaten by pacman
 							}
 							winningScore += (fruit->type() - '0');
 							score += (fruit->type() - '0');
@@ -81,7 +90,7 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 						{
 							if (gameMode == GameMode::save)
 							{
-								ResultFile << 'D' << countSteps;//Pacman Dead
+								ResultFileW << 'D' << countSteps;//Pacman Dead
 							}
 							collision = true;
 							break;
@@ -92,17 +101,17 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 						if (fruit != nullptr)
 						{
 
-							direction=fruit->move(map, pacman.getEntityYPos(), pacman.getEntityXPos(), map.doesThePlayerWantColors(), map.getLineOfScoreBar());
+							direction = fruit->move(map, pacman.getEntityYPos(), pacman.getEntityXPos(), map.doesThePlayerWantColors(), map.getLineOfScoreBar());
 							if (gameMode == GameMode::save)
 							{
-								StepFile << 'f' << direction;
+								StepFileW << 'f' << direction;
 							}
 
 							if (*fruit == pacman)
 							{
 								if (gameMode == GameMode::save)
 								{
-									StepFile << 'f' << 'e';//Fruit eaten by pacman
+									StepFileW << 'f' << 'e';//Fruit eaten by pacman
 								}
 								winningScore += (fruit->type() - '0');
 								score += (fruit->type() - '0');
@@ -130,7 +139,7 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 								{
 									if (gameMode == GameMode::save)
 									{
-										StepFile << 'f' << 'E';//Fruit Eaten by ghost
+										StepFileW << 'f' << 'E';//Fruit Eaten by ghost
 									}
 									if (map.getLineOfScoreBar() == 0)
 										gotoxy(fruit->getEntityXPos(), fruit->getEntityYPos() + 1);
@@ -146,17 +155,17 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 								}
 							}
 
-							direction=(*iterator).move(map, pacman.getEntityYPos(), pacman.getEntityXPos(), map.doesThePlayerWantColors(), map.getLineOfScoreBar());
+							direction = (*iterator).move(map, pacman.getEntityYPos(), pacman.getEntityXPos(), map.doesThePlayerWantColors(), map.getLineOfScoreBar());
 							if (gameMode == GameMode::save)
 							{
-								StepFile << 'g'<<ghostNum << direction;
+								StepFileW << 'g' << ghostNum << direction;
 							}
 
 							if (*iterator == pacman)
 							{
 								if (gameMode == GameMode::save)
 								{
-									ResultFile << 'D' << countSteps;//Pacman Dead
+									ResultFileW << 'D' << countSteps;//Pacman Dead
 								}
 								collision = true;
 								break;
@@ -167,7 +176,7 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 								{
 									if (gameMode == GameMode::save)
 									{
-										StepFile << 'f' << 'E';//Fruit Eaten by ghost
+										StepFileW << 'f' << 'E';//Fruit Eaten by ghost
 									}
 									if (map.getLineOfScoreBar() == 0)
 										gotoxy(fruit->getEntityXPos(), fruit->getEntityYPos() + 1);
@@ -196,7 +205,7 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 						{
 							if (gameMode == GameMode::save)
 							{
-								StepFile << 'f' << 'E';//Fruit Eaten by ghost
+								StepFileW << 'f' << 'E';//Fruit Eaten by ghost
 							}
 							if (map.getLineOfScoreBar() == 0)
 								gotoxy(fruit->getEntityXPos(), fruit->getEntityYPos() + 1);
@@ -211,14 +220,14 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 						}
 					}
 
-					Sleep(250);
+					Sleep(100);
 				}
 				if (fruitCoolDown == 0)
 				{
 					fruit = new Fruit(setFruitStartingPos());
 					if (gameMode == GameMode::save)
 					{
-						StepFile << 'f' << 'B'<< (fruit->type() - '0')<<' ' << fruit->getEntityYPos()<<' ' << fruit->getEntityXPos();//Fruit Born by pacman
+						StepFileW << 'f' << 'B' << (fruit->type() - '0') << ' ' << fruit->getEntityYPos() << ' ' << fruit->getEntityXPos();//Fruit Born by pacman
 					}
 					fruitCoolDown = fruit->getLifeTime() + (rand() % 20) + 30;
 				}
@@ -269,7 +278,7 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 				{
 					if (gameMode == GameMode::save)
 					{
-						ResultFile << 'D' << countSteps;//Pacman Dead
+						ResultFileW << 'D' << countSteps;//Pacman Dead
 					}
 					system("CLS");
 					if (map.doesThePlayerWantColors())
@@ -283,7 +292,7 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 				{
 					if (gameMode == GameMode::save)
 					{
-						ResultFile << 'W' << countSteps;//Pacman Dead
+						ResultFileW << 'W' << countSteps;//Pacman Dead
 					}
 					system("CLS");
 					if (map.doesThePlayerWantColors())
@@ -319,15 +328,20 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 			}
 
 		}
+		if (gameMode != GameMode::simple)
+		{
+			StepFileW.close();
+			ResultFileW.close();
+		}
 		break;
-	}
-	}
+	}//case save or simple closer
+	}//switch closer
 	sumOfScores += score;
 	if (livesLeft == 0)
 	{
 		return false;
 	}
-	else 
+	else
 		return true;
 }
 
@@ -350,8 +364,8 @@ bool Game::begin(int& sumOfScores, string stepsFileName, string resultsFileName,
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
 		printScoreAndLives(map.getLineOfScoreBar());
 	}
-	
-	
+
+
 	for (int i = 0; i < map.getGhostArr().size(); i++)
 	{
 		if (difficultyLevel == ghostType::Novice)
@@ -384,7 +398,7 @@ bool Game::begin(int& sumOfScores, string stepsFileName, string resultsFileName,
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (14));
 				(*casper).printSymbol();
 			}
-			
+
 		}
 		if (difficultyLevel == ghostType::Best)
 		{
@@ -400,10 +414,10 @@ bool Game::begin(int& sumOfScores, string stepsFileName, string resultsFileName,
 					SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (14));
 				(*casper).printSymbol();
 			}
-			
+
 		}
 	}
-	return startGame(sumOfScores,stepsFileName,resultsFileName,gameMode);//maybe const
+	return startGame(sumOfScores, stepsFileName, resultsFileName, gameMode);//maybe const
 }
 
 void Game::askGhostLevel()
@@ -411,7 +425,7 @@ void Game::askGhostLevel()
 	char levelChoice = 't';
 	system("CLS");
 	cout << "Choose Difficulty Level: " << endl << "For Novice press 1" << endl << "For Normal press 2" << endl << "For Hard press 3" << endl;
-	while (levelChoice != '1' && levelChoice != '2'&& levelChoice!='3')
+	while (levelChoice != '1' && levelChoice != '2' && levelChoice != '3')
 		levelChoice = _getch();
 	if (levelChoice == '1')
 		difficultyLevel = ghostType::Novice;
@@ -497,7 +511,7 @@ void Game::printScoreAndLives(int lineOfScoreBar)
 	gotoxy(0, lineOfScoreBar);
 	if (map.doesThePlayerWantColors())
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (14));
-	cout << "Score:" << score+sumOfLastScores << "     Lives:" << livesLeft << endl;
+	cout << "Score:" << score + sumOfLastScores << "     Lives:" << livesLeft << endl;
 	if (map.doesThePlayerWantColors())
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
 }
@@ -505,14 +519,14 @@ void Game::printScoreAndLives(int lineOfScoreBar)
 Position Game::setFruitStartingPos()
 {
 	int fruitRandomX, fruitRandomY;
-	
+
 	bool goodPlace = false;
-	do 
+	do
 	{
-		fruitRandomX = rand() % (map.getCols()-1);
-		fruitRandomY = rand() % (map.getRows()-1);
+		fruitRandomX = rand() % (map.getCols() - 1);
+		fruitRandomY = rand() % (map.getRows() - 1);
 		goodPlace = doesFruitFallOnEntities(Position(fruitRandomY, fruitRandomX));
-		
+
 	} while (map.getSymbolInMap(fruitRandomY, fruitRandomX) == WALL || map.getSymbolInMap(fruitRandomY, fruitRandomX) == TUNNEL || !goodPlace);
 	Position pos = Position(fruitRandomY, fruitRandomX);
 	return pos;
@@ -522,7 +536,7 @@ bool Game::doesFruitFallOnEntities(Position pos)
 {
 	bool allchecked = false;
 	Fruit tempfruit(pos);
-	while(!allchecked) {
+	while (!allchecked) {
 		if (pacman == tempfruit) {
 			break;
 		}
