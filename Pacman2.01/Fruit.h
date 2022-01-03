@@ -18,6 +18,7 @@ public:
     int getLifeTime()const;
     void setLifeTime();
     void setSymbol();
+    inline void setSymbol(int value) { symbol = value + '0'; }
     void printSymbol()const { cout << symbol; } ;
     char type()const { return symbol; };
     void ZeroLifeTime();

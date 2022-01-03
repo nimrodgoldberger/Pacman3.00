@@ -1,18 +1,18 @@
 #include "Game.h"
 
 /*CONSTRUCTOR*/
-Game::Game(string fileName, int& sumOfScores) :map(Map(fileName))
+Game::Game(string fileName, int& sumOfScores, int& sumoflives) :map(Map(fileName))
 {
 	sumOfLastScores = sumOfScores;
 	score = 0;
-	livesLeft = 3;
+	livesLeft = sumoflives;
 	winningScore = map.getNumOfCrumbs();
 	pacman.setStartingPos(map.getPacmanStartPos());
 }
 /*FUNCTIONS*/
-bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileName, GameMode gameMode)
+bool Game::startGame(int& sumOfScores, int& sumoflives, string stepsFileName, string resultsFileName, GameMode gameMode)
 {
-	bool GameOn = true, isGamePaused = false, moveGhost = true, collision = false;
+	bool GameOn = true, gameResult = true, isGamePaused = false, moveGhost = true, collision = false;
 	char temp = 0;
 	int fruitCoolDown = 0;
 	char direction;
@@ -32,15 +32,346 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 	switch (gameMode)
 	{
 	case GameMode::load:
-	{
-		//to do
-		StepFileR.close();
-		ResultFileR.close();
-		break;
-	}
 	case GameMode::loadSilent:
 	{
+		PairsOfResult stepsCountForTest;
 		//to do
+		vector<PairsOfResult> theResults;
+		PairsOfResult temp;
+		int steps = 0;
+		stepsCountForTest.timeOfEvent = 0;
+		char entity;
+		int fruitValue;
+		int fruitY;
+		int fruitX;
+		int ghostNumber;
+		char direct;
+		char directG;
+		char directP;
+		bool color = true;
+		while (!ResultFileR.eof())
+		{
+			ResultFileR >> temp.event >> temp.timeOfEvent;
+			theResults.push_back(temp);
+		}
+		for (int i = 0; i < theResults.size(); i++)
+		{
+			
+
+			while (steps < theResults[i].timeOfEvent)
+			{
+				StepFileR >> entity;
+				switch (entity)
+				{
+				case 'f'://fruit
+				{
+					StepFileR >> direct;
+					switch (direct)
+					{
+					case 'B':
+					{
+						StepFileR >> fruitValue;
+						StepFileR >> fruitY;
+						StepFileR >> fruitX;
+						fruit = new Fruit(Position(fruitY, fruitX));
+						fruit->setSymbol(fruitValue);
+						break;
+					}
+					case 'e':
+					{
+						winningScore += (fruit->type() - '0');//maybe unnecessary
+						score += (fruit->type() - '0');
+						delete[] fruit;
+						fruit = nullptr;
+						if (gameMode != GameMode::loadSilent)
+						{
+							printScoreAndLives(map.getLineOfScoreBar());
+						}
+
+						break;
+					}
+					case 'E':
+					{
+						if (gameMode != GameMode::loadSilent)
+						{
+							if (map.getLineOfScoreBar() == 0)
+								gotoxy(fruit->getEntityXPos(), fruit->getEntityYPos() + 1);
+							else
+								gotoxy(fruit->getEntityXPos(), fruit->getEntityYPos());
+							if (map.doesThePlayerWantColors())
+								SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
+							cout << map.getSymbolInMap(fruit->getEntityYPos(), fruit->getEntityXPos());
+						}
+						delete[] fruit;
+						fruit = nullptr;
+						break;
+					}
+					case 'w':
+					case 'a':
+					case 's':
+					case 'd':
+					case 'x':
+					{
+						fruit->move_load(direct, 'f', map, color, map.getLineOfScoreBar(), gameMode);
+						break;
+					}
+					default:
+						cout << "ERROR ERROR";
+						exit(1);
+					}
+					break;
+				}
+				case 'p'://pacman
+				{
+					StepFileR >> direct;
+					directP = direct;
+					pacman.move_load(direct, 'p', map, color, map.getLineOfScoreBar(), gameMode);
+					if (gameMode == GameMode::loadSilent)
+						stepsCountForTest.timeOfEvent++;
+					steps++;
+					if (getSymbol(pacman.getEntityYPos(), pacman.getEntityXPos()) == CRUMBSIGN)
+					{
+						map.setSymbolInMap(pacman.getEntityYPos(), pacman.getEntityXPos(), FREE);
+						score++;
+						if (gameMode != GameMode::loadSilent)
+						{
+							printScoreAndLives(map.getLineOfScoreBar());
+						}
+					}
+					break;
+				}
+				case 'g'://ghost
+				{
+					StepFileR >> ghostNumber;
+					StepFileR >> direct;
+					directG = direct;
+					ghostArray[ghostNumber]->move_load(direct, 'g', map, color, map.getLineOfScoreBar(), gameMode);
+					break;
+				}
+				default:
+					cout << "NO SUCH ENTITY TYPE";
+					exit(1);
+				}
+				if (gameMode != GameMode::loadSilent)
+				Sleep(50);
+				
+			}
+
+			if (gameMode == GameMode::loadSilent)
+			{
+				for (GhostBase* iterator : ghostArray)
+				{
+					switch (directP)
+					{
+					case 'w':
+					{
+						if (pacman.getEntityXPos() - 1 == iterator->getEntityXPos() && pacman.getEntityYPos() == iterator->getEntityYPos())
+						{
+							stepsCountForTest.event = 'D';
+							break;
+						}
+						else
+							stepsCountForTest.event = 'W';
+						break;
+					}
+					case 'x':
+					{
+						if (pacman.getEntityXPos() + 1 == iterator->getEntityXPos() && pacman.getEntityYPos() == iterator->getEntityYPos())
+						{
+							stepsCountForTest.event = 'D';
+							break;
+						}
+						else
+							stepsCountForTest.event = 'W';
+						break;
+					}
+					case 'a':
+					{
+						if (pacman.getEntityXPos() == iterator->getEntityXPos() && pacman.getEntityYPos() - 1 == iterator->getEntityYPos())
+						{
+							stepsCountForTest.event = 'D';
+							break;
+						}
+						else
+							stepsCountForTest.event = 'W';
+						break;
+					}
+					case 'd':
+					{
+						if (pacman.getEntityXPos() == iterator->getEntityXPos() && pacman.getEntityYPos() + 1 == iterator->getEntityYPos())
+						{
+							stepsCountForTest.event = 'D';
+							break;
+						}
+						else
+							stepsCountForTest.event = 'W';
+						break;
+					}
+					case 's':
+					{
+						switch (directG)
+						{
+						case 'w':
+						{
+							if (pacman.getEntityXPos() == iterator->getEntityXPos() - 1 && pacman.getEntityYPos() == iterator->getEntityYPos())
+							{
+								stepsCountForTest.event = 'D';
+								break;
+							}
+							else
+								stepsCountForTest.event = 'W';
+							break;
+						}
+						case 'x':
+						{
+							if (pacman.getEntityXPos() == iterator->getEntityXPos() + 1 && pacman.getEntityYPos() == iterator->getEntityYPos())
+							{
+								stepsCountForTest.event = 'D';
+								break;
+							}
+							else
+								stepsCountForTest.event = 'W';
+							break;
+						}
+						case 'a':
+						{
+							if (pacman.getEntityXPos() == iterator->getEntityXPos() && pacman.getEntityYPos() == iterator->getEntityYPos() - 1)
+							{
+								stepsCountForTest.event = 'D';
+								break;
+							}
+							else
+								stepsCountForTest.event = 'W';
+							break;
+						}
+						case 'd':
+						{
+							if (pacman.getEntityXPos() == iterator->getEntityXPos() && pacman.getEntityYPos() == iterator->getEntityYPos() + 1)
+							{
+								stepsCountForTest.event = 'D';
+								break;
+							}
+							else
+								stepsCountForTest.event = 'W';
+							break;
+						}
+						default:
+							cout << "ERROR NUMBER -1";
+							gameResult = false;
+							break;
+						}
+						break;
+					}
+					default:
+						break;
+					}
+					/*if (pacman.getEntityXPos()==iterator->getEntityXPos() && pacman.getEntityYPos() == iterator->getEntityYPos())
+					{
+						stepsCountForTest.event = 'D';
+						break;
+					}
+					else
+					stepsCountForTest.event = 'W';*/
+
+				}
+				if (theResults[i].event == 'D' && stepsCountForTest.event == 'D')
+				{
+					if (stepsCountForTest.timeOfEvent!=theResults[i].timeOfEvent)
+					{
+						gameResult = false;
+					
+						//error!!!!!
+						cout << "ERROR NUMBER 0";
+					}
+				}
+				else if (theResults[i].event == 'W' && stepsCountForTest.event == 'W')
+				{
+					if (stepsCountForTest.timeOfEvent != theResults[i].timeOfEvent)
+					{
+						//good
+						gameResult = false;
+						cout << "ERROR NUMBER 1";
+						//error!!!!!
+					}
+				}
+				else
+				{
+					gameResult = false;
+					cout << "ERROR NUMBER 2";
+					//ERROR!!!!!!!!!!
+				}
+
+			}
+			if (theResults[i].event == 'D')
+			{
+				livesLeft--;
+				if (gameMode != GameMode::loadSilent)
+				{
+					if (map.getLineOfScoreBar() == 0)
+						gotoxy(pacman.getEntityXPos(), pacman.getEntityYPos() + 1);
+					else
+						gotoxy(pacman.getEntityXPos(), pacman.getEntityYPos());
+					if (map.doesThePlayerWantColors())
+						SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
+					//***************************************
+					cout << map.getSymbolInMap(pacman.getEntityYPos(), pacman.getEntityXPos());
+				}
+				pacman.setEntityYPos(pacman.getStartingPos().getY());
+				pacman.setEntityXPos(pacman.getStartingPos().getX());
+				if (gameMode != GameMode::loadSilent)
+				{
+					if (map.getLineOfScoreBar() == 0)
+						gotoxy(pacman.getEntityXPos(), pacman.getEntityYPos() + 1);
+					else
+						gotoxy(pacman.getEntityXPos(), pacman.getEntityYPos());
+					if (map.doesThePlayerWantColors())
+						SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (14));
+					pacman.printSymbol();
+					if (map.doesThePlayerWantColors())
+						SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
+					printScoreAndLives(map.getLineOfScoreBar());
+				}
+				for (GhostBase* iterator : ghostArray)
+				{
+					if (gameMode != GameMode::loadSilent)
+					{
+						if (map.getLineOfScoreBar() == 0)
+							gotoxy(iterator->getEntityXPos(), iterator->getEntityYPos() + 1);
+						else
+							gotoxy(iterator->getEntityXPos(), iterator->getEntityYPos());
+						if (map.doesThePlayerWantColors())
+							SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (14));
+						cout << map.getSymbolInMap(pacman.getEntityYPos(), pacman.getEntityXPos());
+						if (map.doesThePlayerWantColors())
+							SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
+					}
+					iterator->setEntityYPos(iterator->getStartingPos().getY());
+					iterator->setEntityXPos(iterator->getStartingPos().getX());
+					if (gameMode != GameMode::loadSilent)
+					{
+						if (map.getLineOfScoreBar() == 0)
+							gotoxy(iterator->getEntityXPos(), iterator->getEntityYPos() + 1);
+						else
+							gotoxy(iterator->getEntityXPos(), iterator->getEntityYPos());
+						if (map.doesThePlayerWantColors())
+							SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (14));
+						iterator->printSymbol();
+						if (map.doesThePlayerWantColors())
+							SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
+					}
+					break;
+				}//put everyone back at their starting places
+			}
+			//else
+			//{
+			//	//print win set lives and set total score
+			//	//go to the next screen 
+			//	//return true;
+			//}
+		}
+
+		//print lost message and exit;
+		//return false;
 		StepFileR.close();
 		ResultFileR.close();
 		break;
@@ -63,10 +394,6 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 					}
 
 					direction = pacman.move(map, pacman.getEntityYPos(), pacman.getEntityXPos(), map.doesThePlayerWantColors(), map.getLineOfScoreBar());
-					if (gameMode == GameMode::save)
-					{
-						StepFileW << 'p' << direction;
-					}
 					countSteps++;
 
 					if (fruit != nullptr)
@@ -86,16 +413,31 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 					}
 					for (GhostBase* iterator : ghostArray)
 					{
+
 						if (pacman == *iterator)
 						{
 							if (gameMode == GameMode::save)
 							{
 								ResultFileW << 'D' << countSteps;//Pacman Dead
+								//StepFileW << 'g' << ghostNum << 's';
 							}
 							collision = true;
 							break;
 						}
+
 					}
+					if (gameMode == GameMode::save)
+					{
+						if (collision)
+						{
+							StepFileW << 'p' << 's';
+
+						}
+						else
+							StepFileW << 'p' << direction;
+					}
+					if (collision)
+						break;
 					if (moveGhost)
 					{
 						if (fruit != nullptr)
@@ -154,21 +496,59 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 									fruit = nullptr;
 								}
 							}
+							/*if (collision)
+							{
+								direction = 's';
+							/*}*/
+							//else*/
+								direction = (*iterator).move(map, pacman.getEntityYPos(), pacman.getEntityXPos(), map.doesThePlayerWantColors(), map.getLineOfScoreBar());
 
-							direction = (*iterator).move(map, pacman.getEntityYPos(), pacman.getEntityXPos(), map.doesThePlayerWantColors(), map.getLineOfScoreBar());
-							if (gameMode == GameMode::save)
+							/*if (gameMode == GameMode::save)
 							{
 								StepFileW << 'g' << ghostNum << direction;
-							}
-
+							}*/
+							/*
 							if (*iterator == pacman)
 							{
+								if (gameMode == GameMode::save && !collision)
+								{
+									//alll ghosts left to stay
+
+									StepFileW << 'g' << ghostNum << 's';
+
+									ResultFileW << 'D' << countSteps;//Pacman Dead
+
+								}
+								collision = true;
+								//StepFileW << 'g' << ghostNum << 's';//MAYBE INSTEAD OF TWO MOVES, ONLY THIS
+								break;
+							}
+							else
+							{
 								if (gameMode == GameMode::save)
+								{
+									StepFileW << 'g' << ghostNum << direction;
+
+								}
+							}
+							*/
+							if (*iterator == pacman && !collision)
+							{
+								if (gameMode == GameMode::save && !collision)
 								{
 									ResultFileW << 'D' << countSteps;//Pacman Dead
 								}
 								collision = true;
-								break;
+								//StepFileW << 'g' << ghostNum << 's';//MAYBE INSTEAD OF TWO MOVES, ONLY THIS
+								//break;
+							}
+							if (collision)
+							{
+								direction = 's';
+							}
+							if (gameMode == GameMode::save)
+							{
+								StepFileW << 'g' << ghostNum << direction;
 							}
 							if (fruit != nullptr)
 							{
@@ -193,6 +573,8 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 							}
 							ghostNum++;
 						}
+						//if (collision)
+							//break;
 						moveGhost = false;
 						fruitCoolDown--;
 					}
@@ -233,13 +615,17 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 				}
 				if (collision)
 				{
+					/*if (gameMode == GameMode::save) {
+						StepFileW << 'p' << 's';
+					}*/
 					setNumOfLives();
 					printScoreAndLives(map.getLineOfScoreBar());
 					if (map.getLineOfScoreBar() == 0)
 						gotoxy(pacman.getEntityXPos(), pacman.getEntityYPos() + 1);
 					else
 						gotoxy(pacman.getEntityXPos(), pacman.getEntityYPos());
-					cout << map.getSymbolInMap(pacman.getEntityYPos(), pacman.getEntityXPos());/*NIMROD*/
+					cout << map.getSymbolInMap(pacman.getEntityYPos(), pacman.getEntityXPos());
+					pacman.setDirection(STAY);
 					pacman.setEntityXPos(pacman.getStartingPos().getX());
 					pacman.setEntityYPos(pacman.getStartingPos().getY());
 					if (map.getLineOfScoreBar() == 0)
@@ -251,14 +637,19 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 					pacman.printSymbol();
 					if (map.doesThePlayerWantColors())
 						SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
-					pacman.setDirection(STAY);
+
+					ghostNum = 0;
 					for (GhostBase* iterator : ghostArray)
 					{
+						/*if (gameMode == GameMode::save) {
+							StepFileW << 'g' << ghostNum << 's';
+						}*/
 						if (map.getLineOfScoreBar() == 0)
 							gotoxy((*iterator).getEntityXPos(), (*iterator).getEntityYPos() + 1);
 						else
 							gotoxy((*iterator).getEntityXPos(), (*iterator).getEntityYPos());
 						cout << map.getSymbolInMap((*iterator).getEntityYPos(), (*iterator).getEntityXPos());
+						(*iterator).setDirection(STAY);
 						(*iterator).setEntityXPos((*iterator).getStartingPos().getX());
 						(*iterator).setEntityYPos((*iterator).getStartingPos().getY());
 						if (map.getLineOfScoreBar() == 0)
@@ -270,16 +661,18 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 						(*iterator).printSymbol();
 						if (map.doesThePlayerWantColors())
 							SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
+
+						ghostNum++;
 					}
 					collision = false;
 				}
 
 				if (livesLeft == 0)/*LOST*/
 				{
-					if (gameMode == GameMode::save)
-					{
-						ResultFileW << 'D' << countSteps;//Pacman Dead
-					}
+					//if (gameMode == GameMode::save)
+					//{
+					//	ResultFileW << 'D' << countSteps;//Pacman Dead
+					//}
 					system("CLS");
 					if (map.doesThePlayerWantColors())
 						SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (14));
@@ -337,19 +730,36 @@ bool Game::startGame(int& sumOfScores, string stepsFileName, string resultsFileN
 	}//case save or simple closer
 	}//switch closer
 	sumOfScores += score;
-	if (livesLeft == 0)
+	if (gameMode == GameMode::loadSilent)
 	{
-		return false;
+		return gameResult;
 	}
 	else
-		return true;
+	{
+		if (livesLeft == 0)
+		{
+			return false;
+		}
+		else
+		{
+			sumoflives = livesLeft;
+			return true;
+		}
+	}
+	
+
 }
 
 
-bool Game::begin(int& sumOfScores, string stepsFileName, string resultsFileName, GameMode gameMode)
+bool Game::begin(int& sumOfScores, int& sumoflives, string stepsFileName, string resultsFileName, GameMode gameMode)
 {
-	askGhostLevel();
-	map.setColorChoice();
+	Sleep(1000);
+	system("CLS");
+	if (gameMode != GameMode::load && gameMode != GameMode::loadSilent)
+	{
+		askGhostLevel();
+		map.setColorChoice();
+	}
 	if (gameMode != GameMode::loadSilent)
 	{
 		map.printMap();
@@ -364,8 +774,6 @@ bool Game::begin(int& sumOfScores, string stepsFileName, string resultsFileName,
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (11));
 		printScoreAndLives(map.getLineOfScoreBar());
 	}
-
-
 	for (int i = 0; i < map.getGhostArr().size(); i++)
 	{
 		if (difficultyLevel == ghostType::Novice)
@@ -417,7 +825,15 @@ bool Game::begin(int& sumOfScores, string stepsFileName, string resultsFileName,
 
 		}
 	}
-	return startGame(sumOfScores, stepsFileName, resultsFileName, gameMode);//maybe const
+	bool result = startGame(sumOfScores, sumoflives, stepsFileName, resultsFileName, gameMode);//maybe const
+	if (gameMode == GameMode::loadSilent)
+	{
+		if (result)
+			cout << "The test was successfull!!! Hurray";
+		else
+			cout << "The test has failed the run didn't go as planned...";
+	}
+	return result;
 }
 
 void Game::askGhostLevel()

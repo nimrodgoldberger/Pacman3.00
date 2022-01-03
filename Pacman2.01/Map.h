@@ -24,6 +24,8 @@ using namespace std;
 #define LEFT 'a'
 #define RIGHT 'd'
 #define STAY 's'
+enum class GameMode { load, loadSilent, simple, save };
+
 //class Map
 //{
 //private:

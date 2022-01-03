@@ -30,6 +30,21 @@ char playCurrScreenGame(FilesList& screenlist, FilesList& stepslist, FilesList& 
 //	return 0;
 //}
 
+//int main(int argc, char* argv[])
+//{
+//	InputParser input(argc, argv);
+//	string s = "pacman_01.steps";
+//	ifstream resFile(s, ios_base::in);
+//	char c;
+//	int num;
+//	resFile >> c;
+//	resFile >> c;
+//	resFile >> num;
+//	resFile >> num;
+//	cout << num;
+//	//	FilesList screenlst, stepslst, resultslst;
+//	//	screenlst.getFilesFromDirectory(FileType::screen);
+//}
 
 int main(int argc, char* argv[])
 {
@@ -55,13 +70,12 @@ int main(int argc, char* argv[])
 	else
 	{
 		screenlst.makeSureFilesAreThere(stepslst, FileType::steps, input);
-		cout << "got here and ok";
 		screenlst.makeSureFilesAreThere(resultslst, FileType::results, input);
 		if (input.cmdOptionExists("-load")) {
 			//cout << "load" << endl;
-			if (argv[1] == "-silent")
+			if (input.cmdOptionExists("-silent"))
 			{
-				mainMenu(screenlst,stepslst,resultslst, GameMode::loadSilent);
+				mainMenu(screenlst, stepslst, resultslst, GameMode::loadSilent);
 				//cout << "silent" << endl;
 			}
 			else
@@ -87,11 +101,11 @@ int main(int argc, char* argv[])
 
 void mainMenu(FilesList& screenlist, FilesList& stepslist, FilesList& resultslist, GameMode gameMode)
 {
-	char c='_';
+	char c = '_';
 	switch (gameMode)
 	{
 	case GameMode::load:
-		c = playCurrScreenGame(screenlist,stepslist,resultslist, gameMode);
+		c = playCurrScreenGame(screenlist, stepslist, resultslist, gameMode);
 		break;
 	case GameMode::loadSilent:
 		c = playCurrScreenGame(screenlist, stepslist, resultslist, gameMode);
@@ -111,9 +125,10 @@ void mainMenu(FilesList& screenlist, FilesList& stepslist, FilesList& resultslis
 			case 1:
 			{
 				int startingScore = 0;
+				int sumoflives = 3;
 				system("CLS");
-				Game theGame = Game::Game(screenlist.getListOfFiles()[0], startingScore);
-				theGame.begin(startingScore, stepslist.getListOfFiles()[0],resultslist.getListOfFiles()[0],gameMode);
+				Game theGame = Game::Game(screenlist.getListOfFiles()[0], startingScore, sumoflives);
+				theGame.begin(startingScore, sumoflives, stepslist.getListOfFiles()[0], resultslist.getListOfFiles()[0], gameMode);
 				break;
 			}
 			case 2:
@@ -130,9 +145,10 @@ void mainMenu(FilesList& screenlist, FilesList& stepslist, FilesList& resultslis
 					found = fName.find(".screen");
 				}
 				int startingScore = 0;
+				int sumoflives = 3;
 				system("CLS");
-				Game theGame = Game::Game(fName, startingScore);
-				theGame.begin(startingScore, stepslist.getListOfFiles()[0], resultslist.getListOfFiles()[0], gameMode);
+				Game theGame = Game::Game(fName, startingScore, sumoflives);
+				theGame.begin(startingScore, sumoflives, stepslist.getListOfFiles()[0], resultslist.getListOfFiles()[0], gameMode);
 				break;
 			}
 			case 3:
@@ -173,7 +189,7 @@ void mainMenu(FilesList& screenlist, FilesList& stepslist, FilesList& resultslis
 		}
 		break;
 	}
-	
+
 }
 void printMenu(int numOfFilesInDirectory)
 {
@@ -187,6 +203,7 @@ void printMenu(int numOfFilesInDirectory)
 char playCurrScreenGame(FilesList& screenlist, FilesList& stepslist, FilesList& resultslist, GameMode gameMode)
 {
 	int sumOfScores = 0;
+	int sumoflives = 3;
 	bool didPlayerWin = true;
 	vector<string> screensFnames = screenlist.getListOfFiles();
 	vector<string> stepFnames = stepslist.getListOfFiles();
@@ -196,34 +213,40 @@ char playCurrScreenGame(FilesList& screenlist, FilesList& stepslist, FilesList& 
 	int numOfScreen = 0;
 	for (string screen : screensFnames)
 	{
-		game = new Game(screen, sumOfScores);
-		didPlayerWin = game->begin(sumOfScores, stepFnames[numOfScreen], resultFnames[numOfScreen],gameMode);
+		game = new Game(screen, sumOfScores, sumoflives);
+		didPlayerWin = game->begin(sumOfScores, sumoflives, stepFnames[numOfScreen], resultFnames[numOfScreen], gameMode);
 		numOfScreen++;
 		/*dtor!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
-		if (!didPlayerWin)
+		if (gameMode != GameMode::loadSilent)
 		{
-			break;
+			if (!didPlayerWin)
+			{
+				break;
+			}
+			else
+			{
+				if (screen != screensFnames.back())
+				{
+					system("CLS");
+					cout << "WELL DONE!!! YOUR CURRENT SCORE IS: " << sumOfScores << endl;
+				}
+			}
+		}
+	}
+	if (gameMode != GameMode::loadSilent)
+	{
+		if (didPlayerWin)
+		{
+			system("CLS");
+			cout << "AMAZING YOU WON ALL THE LEVELS!!!!" << endl << endl << "YOUR TOTAL SCORE IS: " << sumOfScores << endl;
 		}
 		else
 		{
-			if (screen != screensFnames.back())
-			{
-				system("CLS");
-				cout << "WELL DONE!!! YOUR CURRENT SCORE IS: " << sumOfScores << endl;
-			}
-
+			system("CLS");
+			cout << "GAME OVER" << endl << "Better luck next time.." << "   YOUR SCORE WAS: " << sumOfScores << endl;
 		}
 	}
-	if (didPlayerWin)
-	{
-		system("CLS");
-		cout << "AMAZING YOU WON ALL THE LEVELS!!!!" << endl << endl << "YOUR TOTAL SCORE IS: " << sumOfScores << endl;
-	}
-	else
-	{
-		system("CLS");
-		cout << "GAME OVER" << endl << "Better luck next time.." << "   YOUR SCORE WAS: " << sumOfScores << endl;
-	}
+
 	return _getch();
 }
 

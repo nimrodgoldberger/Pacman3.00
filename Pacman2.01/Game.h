@@ -28,9 +28,13 @@ using std::string;
 /*Pressed for pausing the game or returning to the main menu from the instructions' page*/
 #define ESC 27 
 /*Different directions for the Entities' movement*/
-enum class GameMode { load, loadSilent, simple, save };
 
 enum class ghostType{Best,Good, Novice};
+struct PairsOfResult
+{
+	char event;
+	int timeOfEvent;
+};
 
 class Game
 {
@@ -49,7 +53,7 @@ private:
 public:
 
 	/*CONSTRUCTORS*/
-	Game(string fileName,int& sumOfScores);
+	Game(string fileName,int& sumOfScores, int& sumoflives);
 
 	/*GETTERS*/
 	int getLivesLeft()const;/*Returns the number of lives left*/
@@ -61,7 +65,7 @@ public:
 	void setScore();/*Increases the score by one*/
 	void setNumOfLives();/*Decreases the nuber of lives by one*/
 	/*Start the Game Functions*/
-	bool begin(int& sumOfScores,string stepsFileName,string resultsFileName,GameMode gameMode);/*Calls the ctor of the map, recieves the player's choice about playing in color or not,prints map and score\lives bar ,and calls the movePacMan*/
+	bool begin(int& sumOfScores,int& sumoflives,string stepsFileName,string resultsFileName,GameMode gameMode);/*Calls the ctor of the map, recieves the player's choice about playing in color or not,prints map and score\lives bar ,and calls the movePacMan*/
 	/*Printing Functions*/
 	void printScoreAndLives(int lineOfScoreBar);/*Goes to the bottom of the MAP and prints the updated score and lives count*/
 	
@@ -76,7 +80,7 @@ public:
 		SetConsoleCursorPosition(hConsoleOutput, dwCursorPosition);
 	}
 	void askGhostLevel();
-	bool startGame(int& sumOfScores, string stepsFileName, string resultsFileName, GameMode gameMode);
+	bool startGame(int& sumOfScores, int& sumoflives, string stepsFileName, string resultsFileName, GameMode gameMode);
 
 	Position setFruitStartingPos();
 	bool doesFruitFallOnEntities(Position pos);

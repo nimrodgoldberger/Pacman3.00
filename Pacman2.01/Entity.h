@@ -37,7 +37,13 @@ public:
 	virtual void printSymbol()const = 0;
 	
 	virtual void setDirection(char newDirection)=0;
+	/*LOAD FUNCTIONS*/
+	void move_load(char direction,char entityType, Map& mp, bool colorful, int scoreAndLivesRow,GameMode gameMode);
+	void eatCrumb(Map& mp)
+	{
+		mp.setSymbolInMap(this->y, this->x, ' ');
 
+	}
 	bool operator ==(Entity& other);
 	bool changeDirectionToStayIfNeeded(char nextObject);
 	inline Position getStartingPos()const { return startingPos; }

@@ -75,19 +75,60 @@ void FilesList::makeSureFilesAreThere(FilesList& stepOrResult, FileType fileType
 		}
 		else if (numOfMaps < stepOrResult.getNumOfMaps())
 		{
-			int k = 0;
+			//string temp;
+			///*	int k = 1;*/
+			//int j = 0;
+			//for (int i = 0; i < numOfMaps; i++)
+			//{
+			//	temp.clear();
+			//	temp = stepOrResult.getListOfFiles()[i];
+			//	std::size_t pos = temp.find(".screen");
+			//	/*while (temp[k] != '.')
+			//	{
+			//		k++;
+			//	}*/
+			//	/*newList.push_back(temp.substr(0, k + 1));*///review this part
+			//	//newList.push_back(temp.substr(0, pos));//review this part
+			//	if (list[i] == temp.substr(0, pos) + ".screen")
+			//	{
+			//		j++;//exists
+			//	}
+			//	else
+			//	{
+			//		/*
+			//			MAYBE ERROR AND CLOSE GAME OR CHECK MATCHES AND PLAY ONLY THE GOOD MATCHES
+			//		*/
+			//		cout << "ERROR!! Not all Screens have Matching  Step/Result files to load!!" << endl;
+			//		exit(1);
+			//		/*stepOrResult.getListOfFiles().erase(stepOrResult.getListOfFiles().begin() + i);
+			//		stepOrResult.decreaseNumOfMaps();
+			//		i--;*/
+			//	}
+			//}
+			//int k = 0;
 			int j = 0;
 			string temp;
 			for (int i = 0; i < stepOrResult.getNumOfMaps(); i++)
 			{
 				temp.clear();
 				temp = stepOrResult.getListOfFiles()[i];
-				while (temp[k] != '.')
+				if (fileType == FileType::results)
 				{
-					k++;
+					for (size_t m = 0; m < 7; m++)
+					{
+						temp.pop_back();
+					}
 				}
-				/*newList.push_back(temp.substr(0, k + 1));*///review this part
-				if (list[j] == temp.substr(0, k + 1) + ".screen")
+				else
+				{
+					for (size_t m = 0; m < 6; m++)
+					{
+						temp.pop_back();
+					}
+				}
+				cout << temp;
+				temp = temp + ".screen";
+				if (list[i] == temp)
 				{
 					j++;//exists
 				}
@@ -97,7 +138,7 @@ void FilesList::makeSureFilesAreThere(FilesList& stepOrResult, FileType fileType
 					stepOrResult.decreaseNumOfMaps();
 					i--;
 				}
-				k = 0;
+				//k = 0;
 			}
 			if (stepOrResult.getNumOfMaps() == 0)
 			{
@@ -136,24 +177,79 @@ void FilesList::makeSureFilesAreThere(FilesList& stepOrResult, FileType fileType
 			/*
 			MAYBE ERROR AND CLOSE GAME OR CHECK MATCHES AND PLAY ONLY THE GOOD MATCHES
 			*/
+			cout << "ERROR!! No Matching files to load (More Screen files Than Step/Result files)!!" << endl;
+			exit(1);
 		}
 		else
 		{
 			//check if names of all files are matching
 			//strcompare untill the "."
+			 
+			
+			//vector<string> newList;
+			//string temp;
+			//for (int i = 0; i < numOfMaps; i++)
+			//{
+			//	temp.clear();
+			//	temp = getListOfFiles()[i];
+			//	std::size_t pos = temp.find(".screen");
+			//	newList.push_back(temp.substr(0, pos));//review this part
+			//	if (fileType == FileType::steps)
+			//	{
+			//		newList[i] = newList[i] + ".steps";
+			//	}
+			//	else
+			//		newList[i] = newList[i] + ".result";
+
+			//	stepOrResult.setListOfFiles(newList);
+			//}
+			//vector<string> newList;
+			//string temp;
+			//for (int i = 0; i < numOfMaps; i++)
+			//{
+			//	temp.clear();
+			//	temp = getListOfFiles()[i];
+			//	std::size_t pos = temp.find(".screen");
+			//	newList.push_back(temp.substr(0, pos));//review this part
+			//	if (fileType == FileType::steps)
+			//	{
+			//		newList[i] = newList[i] + ".steps";
+			//	}
+			//	else
+			//		newList[i] = newList[i] + ".result";
+			//	stepOrResult.setListOfFiles(newList);
+			//}
 			string temp;
-			int k = 0;
+		/*	int k = 1;*/
 			int j = 0;
 			for (int i = 0; i < numOfMaps; i++)
 			{
 				temp.clear();
 				temp = stepOrResult.getListOfFiles()[i];
-				while (temp[k] != '.')
+				//std::size_t pos = temp.find(".screen");
+				/*while (temp[k] != '.')
 				{
 					k++;
-				}
+				}*/
 				/*newList.push_back(temp.substr(0, k + 1));*///review this part
-				if (list[i] == temp.substr(0, k + 1) + ".screen")
+				//newList.push_back(temp.substr(0, pos));//review this part
+				if (fileType==FileType::results)
+				{
+					for (size_t m = 0; m < 7; m++)
+					{
+						temp.pop_back();
+					}
+				}
+				else
+				{
+					for (size_t m = 0; m <6 ; m++)
+					{
+						temp.pop_back();
+					}
+				}
+				cout << temp;
+				temp=temp + ".screen";
+				if (list[i] == temp)//.substr(0, pos) + ".screen")
 				{
 					j++;//exists
 				}
@@ -162,12 +258,13 @@ void FilesList::makeSureFilesAreThere(FilesList& stepOrResult, FileType fileType
 					/*
 						MAYBE ERROR AND CLOSE GAME OR CHECK MATCHES AND PLAY ONLY THE GOOD MATCHES
 					*/
+					cout << "ERROR!! Not all Screens have Matching  Step/Result files to load!!" << endl;
+					exit(1);
 					/*stepOrResult.getListOfFiles().erase(stepOrResult.getListOfFiles().begin() + i);
 					stepOrResult.decreaseNumOfMaps();
 					i--;*/
 				}
-				k = 0;
-			}
+		    }
 		}
 	}
 	else if (input.cmdOptionExists("-save"))
@@ -175,7 +272,6 @@ void FilesList::makeSureFilesAreThere(FilesList& stepOrResult, FileType fileType
 
 		//erase all files and create matching ones
 		vector<string> newList;
-		//int k=0;
 		string temp;
 		for (int i = 0; i < numOfMaps; i++)
 		{
@@ -183,11 +279,6 @@ void FilesList::makeSureFilesAreThere(FilesList& stepOrResult, FileType fileType
 			temp = getListOfFiles()[i];
 			std::size_t pos = temp.find(".screen");
 			newList.push_back(temp.substr(0,pos));//review this part
-			//while (temp[k]!='.')
-			//{
-			//	k++;
-			//}
-			//newList.push_back(temp.substr(0, k + 1));//review this part
 			if (fileType==FileType::steps)
 			{
 				newList[i] = newList[i] + ".steps";
@@ -195,25 +286,8 @@ void FilesList::makeSureFilesAreThere(FilesList& stepOrResult, FileType fileType
 			else
 				newList[i] = newList[i] + ".result";
 			stepOrResult.setListOfFiles(newList);
-			//k = 0;
 		}
-		// OR
-		//if (stepOrResult.getNumOfMaps() == 0)
-		//{
-		//	//no matching files Create them
-		//}
-		//else if (numOfMaps != stepOrResult.getNumOfMaps())
-		//{
-		//	//erase all files and create matching ones;
-		//}
-		//else
-		//{
-		//	//check if names of all files are matching
-		//	//if a file doesn't match' erase and create one that matches
-		//	//strcompare untill the "."
-		//}
 	}
-
 }
 
 
